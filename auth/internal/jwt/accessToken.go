@@ -3,7 +3,7 @@ package jwt
 import (
 	"errors"
 	"fmt"
-	"github.com/MoraGames/auth/internal/utils"
+	"github.com/MoraGames/StreamingScheduler/auth/internal/utils"
 	"github.com/form3tech-oss/jwt-go"
 	"strconv"
 	"time"
@@ -19,7 +19,7 @@ type JWTAccessMetadata struct {
 }
 
 func NewAccessToken(addExpire int) *JWTAccessMetadata {
-	return &JWTAccessMetadata{ Exp: time.Now().Add(time.Minute * time.Duration(addExpire)).Unix() }
+	return &JWTAccessMetadata{Exp: time.Now().Add(time.Minute * time.Duration(addExpire)).Unix()}
 }
 
 func ExtractAccessMetadata(tokenString, secret string) (*JWTAccessMetadata, error) {
@@ -81,13 +81,13 @@ func (jm *JWTAccessMetadata) GenerateToken(jwtPass string) (string, error) {
 	}
 
 	/*
-	//Get permissions
-	document, err := db.Client.C.Collection("User").Doc(jam.Email).Get(db.Client.Ctx)
-	if err != nil {
-		return "", err
-	}
-	data := document.Data()
-	 */
+		//Get permissions
+		document, err := db.Client.C.Collection("User").Doc(jam.Email).Get(db.Client.Ctx)
+		if err != nil {
+			return "", err
+		}
+		data := document.Data()
+	*/
 
 	//Generate Access token
 	atClaims := jwt.MapClaims{}

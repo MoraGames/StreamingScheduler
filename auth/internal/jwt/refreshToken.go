@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/MoraGames/auth/internal/utils"
+	"github.com/MoraGames/StreamingScheduler/auth/internal/utils"
 	"github.com/form3tech-oss/jwt-go"
 	"strconv"
 	"time"
@@ -20,7 +20,7 @@ func NewRefreshToken(addExpire int) *JWTRefreshMetadata {
 	return &JWTRefreshMetadata{Exp: time.Now().Add(time.Minute * time.Duration(addExpire)).Unix()}
 }
 
-func (jm *JWTRefreshMetadata)  GenerateToken(refreshPass string) (string, error) {
+func (jm *JWTRefreshMetadata) GenerateToken(refreshPass string) (string, error) {
 
 	if err := jm.check(); err != nil {
 		return "", err
@@ -43,13 +43,13 @@ func VerifyRefreshToken(db *sql.DB, email, idRefresh string) bool {
 
 	// TODO: Implements verify refresh token with new db
 	/*
-	_, err := db.Client.C.Collection("User").Doc(email).
-		Collection("RefreshToken").Doc(idRefresh).
-		Get(db.Client.Ctx)
-	if err != nil {
-		return false
-	}
-	 */
+		_, err := db.Client.C.Collection("User").Doc(email).
+			Collection("RefreshToken").Doc(idRefresh).
+			Get(db.Client.Ctx)
+		if err != nil {
+			return false
+		}
+	*/
 
 	return true
 }
@@ -80,7 +80,7 @@ func ExtractRefreshMetadata(tokenString, secret string) (*JWTRefreshMetadata, er
 			return nil, errors.New("Email error!")
 		}
 
-		return &JWTRefreshMetadata {
+		return &JWTRefreshMetadata{
 			RefreshId: refreshId,
 			Email:     email,
 			Exp:       exp,
@@ -88,7 +88,6 @@ func ExtractRefreshMetadata(tokenString, secret string) (*JWTRefreshMetadata, er
 	}
 	return nil, err
 }
-
 
 func AddToDB(db *sql.DB, token string, exp int64) error {
 	//TODO: Add new refresh token to database

@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/MoraGames/auth/internal/jwt"
-	"github.com/MoraGames/auth/internal/mail"
-	"github.com/MoraGames/auth/internal/utils"
+	"github.com/MoraGames/StreamingScheduler/auth/internal/jwt"
+	"github.com/MoraGames/StreamingScheduler/auth/internal/mail"
+	"github.com/MoraGames/StreamingScheduler/auth/internal/utils"
 	"net/http"
 	"os"
 	"strconv"
@@ -50,7 +50,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	//Generate tokens
 	perm, err := jwt.GetPermissionFromDB(dbConn, params.Email)
 	if err != nil {
-		log.Error("General", ip, "ApiLogin", "Error to get user permission from db: " + err.Error())
+		log.Error("General", ip, "ApiLogin", "Error to get user permission from db: "+err.Error())
 		utils.PrintInternalErr(w)
 		return
 	}
@@ -85,7 +85,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 	err = tokenPair.GenerateTokenPair(os.Getenv("JWT_AT_PWD"), os.Getenv("JWT_RT_PWD"))
 	if err != nil {
-		log.Error("General", ip, "ApiLogin", "Error to generate token pair: " + err.Error())
+		log.Error("General", ip, "ApiLogin", "Error to generate token pair: "+err.Error())
 		utils.PrintInternalErr(w)
 		return
 	}
@@ -93,7 +93,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	//Set Cookies
 	err = utils.SetCookies(w, tokenPair.Refresh.Token, os.Getenv("JWT_ISS"), os.Getenv("COOKIE_SECRET"))
 	if err != nil {
-		log.Error("General", ip, "ApiLogin", "Error to set cookies: " + err.Error())
+		log.Error("General", ip, "ApiLogin", "Error to set cookies: "+err.Error())
 		utils.PrintInternalErr(w)
 		return
 	}
@@ -101,18 +101,17 @@ func login(w http.ResponseWriter, r *http.Request) {
 	// Add new refresh token to database
 	err = jwt.AddToDB(dbConn, tokenPair.Refresh.Token, tokenPair.Refresh.Obj.Exp)
 	if err != nil {
-		log.Error("General", ip, "ApiLogin", "Database operation error: " + err.Error())
+		log.Error("General", ip, "ApiLogin", "Database operation error: "+err.Error())
 		utils.PrintInternalErr(w)
 		return
 	}
-
 
 	data2, err := json.Marshal(map[string]string{
 		"AccessToken": tokenPair.Access.Token,
 		"Expiration":  fmt.Sprint(tokenPair.Access.Obj.Exp),
 	})
 	if err != nil {
-		log.Info("General", ip, "ApiLogin", "Error to create AccessToken JSON: " + err.Error())
+		log.Info("General", ip, "ApiLogin", "Error to create AccessToken JSON: "+err.Error())
 		utils.PrintInternalErr(w)
 		return
 	}
@@ -131,7 +130,6 @@ func register(w http.ResponseWriter, r *http.Request) {
 		Password       string `json:"password"`
 		ProfilePicture string `json:"profilePicture,omitempty"`
 	}{}
-
 
 	ip := utils.GetIP(r)
 
@@ -155,7 +153,6 @@ func register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
 	// Check user exist
 	exist, err := u.Exist()
 	if err != nil {
@@ -172,7 +169,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 	//Add in the database
 	newUser, err := u.NewUser()
 	if err != nil {
-		log.Error("General", ip, "ApiSignUp", "AddNewUser error: " + err.Error())
+		log.Error("General", ip, "ApiSignUp", "AddNewUser error: "+err.Error())
 		utils.PrintInternalErr(w)
 		return
 	}
@@ -207,7 +204,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 		Username: u.Username,
 		Link: fmt.Sprintf(
 			"https://%s%sconfirm?email=%s&id=%s",
-			os.Getenv("HOSTNAME") + ":" + os.Getenv("PORT"),
+			os.Getenv("HOSTNAME")+":"+os.Getenv("PORT"),
 			"/api/verifyEmail",
 			u.Email,
 			refToken.RefreshId,
@@ -217,7 +214,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 
 	//Send mails
 	err = mail.SendEmail(
-		os.Getenv("SMTP_HOST") + ":" + os.Getenv("SMTP_PORT"),
+		os.Getenv("SMTP_HOST")+":"+os.Getenv("SMTP_PORT"),
 		os.Getenv("EMAIL_ADDR"),
 		os.Getenv("EMAIL_PWD"),
 		u.Email,
@@ -233,7 +230,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 	// create json with new user data
 	data, err := json.Marshal(newUser)
 	if err != nil {
-		log.Error("General", ip, "ApiSignUp", "Error to send mail: " + err.Error())
+		log.Error("General", ip, "ApiSignUp", "Error to send mail: "+err.Error())
 		return
 	}
 

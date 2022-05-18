@@ -1,4 +1,4 @@
-module github.com/MoraGames/StreamingScheduler/auth/internal/utils
+module utils
 
 go 1.17
 

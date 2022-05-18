@@ -3,12 +3,12 @@ package mail
 import (
 	"errors"
 	"fmt"
-	"github.com/MoraGames/auth/internal/utils"
+	"github.com/MoraGames/StreamingScheduler/auth/internal/utils"
 	"net/smtp"
 	"strings"
 )
 
-func SendEmail(serverAddress, mailAddress, mailKey, to, sub, tmpl string,  data interface{}) error {
+func SendEmail(serverAddress, mailAddress, mailKey, to, sub, tmpl string, data interface{}) error {
 	from := mailAddress
 	pass := mailKey
 
@@ -34,4 +34,3 @@ func SendEmail(serverAddress, mailAddress, mailKey, to, sub, tmpl string,  data 
 
 	return nil
 }
-
