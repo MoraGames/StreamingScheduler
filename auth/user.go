@@ -33,11 +33,24 @@ func (u *User) IsValid() error {
 	return nil
 }
 
-func (u *User) Exist() (bool, error){
+func (u *User) Exist() (bool, error) {
 
-	//TODO: Add exist check in the database
+	row, err := dbConn.Query(`SELECT * FROM Users WHERE email = ?`, u.Email)
+	if err != nil {
+		return false, err
+	}
 
-	return false, nil
+	count := 0
+	for row.Next() {
+		count++
+	}
+
+	// If there isn't a user
+	if count == 0 {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 func (u *User) NewUser() (*User, error) {
