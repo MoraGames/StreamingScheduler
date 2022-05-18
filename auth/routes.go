@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gorilla/mux"
+	"net/http"
 )
 
 const ApiPrefix = "/api/v1"
@@ -12,8 +13,8 @@ func NewRouter() *mux.Router {
 	r := mux.NewRouter()
 
 	// Define routes
-	r.HandleFunc(ApiPrefix + "/login", login)
-	r.HandleFunc(ApiPrefix + "/register", register)
+	r.HandleFunc(ApiPrefix+"/login", login).Methods(http.MethodPost)
+	r.HandleFunc(ApiPrefix+"/register", register).Methods(http.MethodPost)
 	//r.HandleFunc(ApiPrefix + "/refresh", refreshToken)
 	//r.HandleFunc(ApiPrefix + "/verify", verify)
 

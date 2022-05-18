@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
@@ -17,7 +16,7 @@ var dbConn *sql.DB
 // logger variable
 var log = logrus.New()
 
-func init () {
+func init() {
 	var err error
 
 	// Setting logger
@@ -53,14 +52,12 @@ func init () {
 
 func main() {
 
-	r := mux.NewRouter()
-
 	host := os.Getenv("HOSTNAME")
 	port := os.Getenv("PORT")
 
 	srv := &http.Server{
-		Handler:      r,
-		Addr:         host + ":" + port,
+		Handler: NewRouter(),
+		Addr:    host + ":" + port,
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
