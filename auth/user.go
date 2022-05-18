@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"errors"
 	"strings"
 )
@@ -35,27 +36,29 @@ func (u *User) IsValid() error {
 
 func (u *User) Exist() (bool, error) {
 
-	row, err := dbConn.Query(`SELECT * FROM Users WHERE email = ?`, u.Email)
-	if err != nil {
-		return false, err
+	var exists bool
+	err := dbConn.QueryRow("SELECT exists (SELECT * FROM Users WHERE email = ?)", u.Email).Scan(&exists)
+	if err != nil && err != sql.ErrNoRows {
+		return false, errors.New("error checking if row exists " + err.Error())
 	}
 
-	count := 0
-	for row.Next() {
-		count++
-	}
-
-	// If there isn't a user
-	if count == 0 {
-		return false, nil
-	}
-
-	return true, nil
+	return exists, nil
 }
 
-func (u *User) NewUser() (*User, error) {
+func (u *User) NewUser() (int64, error) {
 
-	// TODO: Add new user to database
+	// prepare the insert query
+	stmt, err := dbConn.Prepare("INSERT INTO Users (email, username, password) VALUES (?, ?, ?)")
+	if err != nil {
+		return -1, err
+	}
+	defer stmt.Close()
 
-	return nil, nil
+	res, err := stmt.Exec(u.Email, u.Username, u.Password)
+	if err != nil {
+		return -1, err
+	}
+
+	// get the id of the new user
+	return res.LastInsertId()
 }

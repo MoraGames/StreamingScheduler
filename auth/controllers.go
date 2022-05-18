@@ -167,7 +167,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Add in the database
-	newUser, err := u.NewUser()
+	lastId, err := u.NewUser()
 	if err != nil {
 		log.Error("General", ip, "ApiSignUp", "AddNewUser error: "+err.Error())
 		utils.PrintInternalErr(w)
@@ -227,12 +227,5 @@ func register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// create json with new user data
-	data, err := json.Marshal(newUser)
-	if err != nil {
-		log.Error("General", ip, "ApiSignUp", "Error to send mail: "+err.Error())
-		return
-	}
-
-	w.Write(data)
+	w.Write([]byte(`{"id": ` + strconv.Itoa(int(lastId)) + "}"))
 }
