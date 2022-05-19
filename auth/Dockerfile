@@ -25,6 +25,7 @@ FROM gcr.io/distroless/base-debian10
 WORKDIR /
 
 COPY --from=build /auth /auth
+COPY template template
 
 EXPOSE 3000
 

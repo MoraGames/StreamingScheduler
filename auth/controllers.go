@@ -211,13 +211,13 @@ func register(w http.ResponseWriter, r *http.Request) {
 	c := Conferma{
 		Username: u.Username,
 		Link: fmt.Sprintf(
-			"https://%s%sconfirm?email=%s&id=%s",
-			os.Getenv("HOSTNAME")+":"+os.Getenv("PORT"),
-			"/api/verifyEmail",
+			"https://%s:%s/api/v1/confirm?email=%s&id=%s",
+			os.Getenv("HOSTNAME"),
+			os.Getenv("PORT"),
 			u.Email,
 			refToken.RefreshId,
 		),
-		Login: "https://" + os.Getenv("HOSTNAME") + ":" + os.Getenv("PORT") + "/login",
+		Login: "https://" + os.Getenv("HOSTNAME") + ":" + os.Getenv("PORT") + "/api/v1/login",
 	}
 
 	//Send mails
