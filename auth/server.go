@@ -53,22 +53,17 @@ func init() {
 
 func main() {
 
-	host := os.Getenv("HOSTNAME")
 	port := os.Getenv("PORT")
 
 	srv := &http.Server{
 		Handler: NewRouter(),
-		Addr:    host + ":" + port,
+		Addr:    ":" + port,
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
 
-	log.Infof(
-		"Starting server on %s:%s",
-		host,
-		port,
-	)
+	log.Infoln("Starting server on :" + port)
 
 	log.Fatal(srv.ListenAndServe())
 }
