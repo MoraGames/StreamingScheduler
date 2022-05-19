@@ -16,10 +16,12 @@ type JWTRefreshMetadata struct {
 	Exp       int64
 }
 
+// NewRefreshToken is a function that creates a new refresh token
 func NewRefreshToken(addExpire int) *JWTRefreshMetadata {
 	return &JWTRefreshMetadata{Exp: time.Now().Add(time.Minute * time.Duration(addExpire)).Unix()}
 }
 
+// GenerateToken is a function that generates a new refresh token
 func (jm *JWTRefreshMetadata) GenerateToken(refreshPass string) (string, error) {
 
 	if err := jm.check(); err != nil {
@@ -39,21 +41,19 @@ func (jm *JWTRefreshMetadata) GenerateToken(refreshPass string) (string, error) 
 	return refreshToken, nil
 }
 
-func VerifyRefreshToken(db *sql.DB, email, idRefresh string) bool {
+// VerifyRefreshToken is a function that verify the refresh token
+func VerifyRefreshToken(db *sql.DB, idUser int64, idRefresh string) (bool, error) {
 
-	// TODO: Implements verify refresh token with new db
-	/*
-		_, err := db.Client.C.Collection("User").Doc(email).
-			Collection("RefreshToken").Doc(idRefresh).
-			Get(db.Client.Ctx)
-		if err != nil {
-			return false
-		}
-	*/
+	var exists bool
+	err := db.QueryRow("SELECT exists (SELECT * FROM RefreshTokens WHERE id = ? && user = ?)", idRefresh, idUser).Scan(&exists)
+	if err != nil && err != sql.ErrNoRows {
+		return false, errors.New("error checking if row exists " + err.Error())
+	}
 
-	return true
+	return exists, nil
 }
 
+// ExtractRefreshMetadata is a function that extracts the refresh token metadata
 func ExtractRefreshMetadata(tokenString, secret string) (*JWTRefreshMetadata, error) {
 
 	token, err := VerifyToken(tokenString, secret)
@@ -89,6 +89,7 @@ func ExtractRefreshMetadata(tokenString, secret string) (*JWTRefreshMetadata, er
 	return nil, err
 }
 
+// AddToDB is a function that adds the refresh token in the database
 func AddToDB(db *sql.DB, token string, exp int64, userId int64) error {
 
 	// prepare the insert query
@@ -99,6 +100,42 @@ func AddToDB(db *sql.DB, token string, exp int64, userId int64) error {
 	defer stmt.Close()
 
 	_, err = stmt.Exec(token, exp, userId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// RemoveRefreshToken is a function that removes the user refresh token from the database
+func RemoveRefreshToken(db *sql.DB, token string) error {
+
+	// prepare the insert query
+	stmt, err := db.Prepare("DELETE FROM RefreshTokens WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(token)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// RemoveExpiredRefreshToken is a function that removes the expired user refresh token from the database
+func RemoveExpiredRefreshToken(db *sql.DB) error {
+
+	// prepare the insert query
+	stmt, err := db.Prepare("DELETE FROM RefreshTokens WHERE exp < ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(time.Now().Unix())
 	if err != nil {
 		return err
 	}

@@ -237,3 +237,62 @@ func register(w http.ResponseWriter, r *http.Request) {
 
 	w.Write([]byte(`{"id": ` + strconv.Itoa(int(lastId)) + "}"))
 }
+
+func verify(w http.ResponseWriter, r *http.Request) {
+
+	// Get client ip
+	ip := utils.GetIP(r)
+
+	// Get client params
+	params := []utils.ParamsInfo{
+		{Key: "id", Required: true},
+		{Key: "email", Required: true},
+	}
+
+	p, err := utils.GetParams(params, r)
+	if err != nil {
+		log.Error("General", ip, "ApiConfirmSignup", "Error to get params: "+err.Error())
+		utils.PrintInternalErr(w)
+		return
+	}
+
+	// Get user info
+	user, err := GetUserByEmail(p["email"].(string))
+	if err != nil {
+		log.Error("Error to get user info:", err.Error())
+		utils.PrintInternalErr(w)
+		return
+	}
+
+	// Verify token
+	ok, err := jwt.VerifyRefreshToken(dbConn, user.Id, p["id"].(string))
+	if err != nil {
+		log.Error(err)
+		utils.PrintInternalErr(w)
+		return
+	}
+
+	if !ok {
+		log.Error(p["email"].(string), ip, "ApiConfirmSignup", "Warning to verify refresh token: Token not valid")
+		utils.PrintErr(w, "Token not valid!")
+		return
+	}
+
+	//Remove old refresh token
+	err = jwt.RemoveRefreshToken(dbConn, p["id"].(string))
+	if err != nil {
+		log.Error("Error to remove expired refresh token")
+		utils.PrintInternalErr(w)
+		return
+	}
+
+	//Set user to active
+	err = user.Active()
+	if err != nil {
+		log.Error("Error to enable the user:", err.Error())
+		utils.PrintInternalErr(w)
+		return
+	}
+
+	w.Write([]byte("{\"state\": \"success\"}"))
+}

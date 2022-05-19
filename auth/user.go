@@ -17,6 +17,24 @@ type User struct {
 	Enabled        bool   `json:"-"`
 }
 
+func (u *User) NewUser() (int64, error) {
+
+	// prepare the insert query
+	stmt, err := dbConn.Prepare("INSERT INTO Users (email, username, password) VALUES (?, ?, ?)")
+	if err != nil {
+		return -1, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(u.Email, u.Username, u.Password)
+	if err != nil {
+		return -1, err
+	}
+
+	// get the id of the new user
+	return res.LastInsertId()
+}
+
 //IsValid verifica che i dati utente inviati dal client in fase di registrazione siano corretti.
 func (u *User) IsValid() error {
 
@@ -47,22 +65,14 @@ func (u *User) Exist() (bool, error) {
 	return exists, nil
 }
 
-func (u *User) NewUser() (int64, error) {
+func (u *User) Active() error {
 
-	// prepare the insert query
-	stmt, err := dbConn.Prepare("INSERT INTO Users (email, username, password) VALUES (?, ?, ?)")
+	_, err := dbConn.Query(`UPDATE Users SET enabled=true WHERE id = ?`, u.Id)
 	if err != nil {
-		return -1, err
-	}
-	defer stmt.Close()
-
-	res, err := stmt.Exec(u.Email, u.Username, u.Password)
-	if err != nil {
-		return -1, err
+		return err
 	}
 
-	// get the id of the new user
-	return res.LastInsertId()
+	return nil
 }
 
 func GetUserByEmail(email string) (*User, error) {

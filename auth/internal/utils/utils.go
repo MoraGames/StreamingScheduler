@@ -12,6 +12,39 @@ import (
 	"text/template"
 )
 
+type ParamsInfo struct {
+	Key      string
+	Required bool
+}
+
+//GetParams ritorna i parametri inviati tramite metodo GET dell'HTTP request.
+func GetParams(params []ParamsInfo, r *http.Request) (map[string]interface{}, error) {
+
+	values := make(map[string]interface{})
+
+	for _, param := range params {
+
+		fmt.Println(param)
+
+		keys, err := r.URL.Query()[param.Key]
+
+		fmt.Println(err)
+
+		if (!err || len(keys[0]) < 1) && param.Required == true {
+			return nil, errors.New(fmt.Sprintf("Url Param \"%s\" is missing", param.Key))
+		}
+
+		if err == false || len(keys[0]) < 1 {
+			continue
+		}
+
+		values[param.Key] = keys[0]
+	}
+
+	return values, nil
+
+}
+
 //Restituisce l'IP del client che ha effettuato la richiesta.
 func GetIP(r *http.Request) string {
 	forwarded := r.Header.Get("X-FORWARDED-FOR")

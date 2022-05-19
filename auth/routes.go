@@ -16,7 +16,7 @@ func NewRouter() *mux.Router {
 	r.HandleFunc(ApiPrefix+"/login", login).Methods(http.MethodPost)
 	r.HandleFunc(ApiPrefix+"/register", register).Methods(http.MethodPost)
 	//r.HandleFunc(ApiPrefix + "/refresh", refreshToken)
-	//r.HandleFunc(ApiPrefix + "/verify", verify)
+	r.HandleFunc(ApiPrefix+"/verify", verify)
 
 	return r
 }
