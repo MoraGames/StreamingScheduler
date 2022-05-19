@@ -9,10 +9,12 @@ import (
 type User struct {
 	// TODO: Define user
 
+	Id             int64  `json:"-"`
 	Email          string `json:"email"`
 	Username       string `json:"username"`
 	Password       string `json:"password"`
 	ProfilePicture string `json:"profilePicture,omitempty"`
+	Enabled        bool   `json:"-"`
 }
 
 //IsValid verifica che i dati utente inviati dal client in fase di registrazione siano corretti.
@@ -61,4 +63,50 @@ func (u *User) NewUser() (int64, error) {
 
 	// get the id of the new user
 	return res.LastInsertId()
+}
+
+func GetUserByEmail(email string) (*User, error) {
+
+	var user User
+
+	// prepare the insert query
+	stmt, err := dbConn.Prepare("SELECT * FROM Users WHERE email = ?")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(email)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		rows.Scan(&user.Id, &user.Username, &user.Email, &user.Password, &user.ProfilePicture, &user.Enabled)
+	}
+
+	return &user, nil
+}
+
+func GetUserById(id int64) (*User, error) {
+
+	var user User
+
+	// prepare the insert query
+	stmt, err := dbConn.Prepare("SELECT * FROM Users WHERE id = ?")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(id)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		rows.Scan(&user.Id, &user.Username, &user.Email, &user.Password, &user.ProfilePicture, &user.Enabled)
+	}
+
+	return &user, nil
 }
