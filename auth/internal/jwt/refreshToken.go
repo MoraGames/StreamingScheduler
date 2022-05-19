@@ -89,8 +89,19 @@ func ExtractRefreshMetadata(tokenString, secret string) (*JWTRefreshMetadata, er
 	return nil, err
 }
 
-func AddToDB(db *sql.DB, token string, exp int64) error {
-	//TODO: Add new refresh token to database
+func AddToDB(db *sql.DB, token string, exp int64, userId int64) error {
+
+	// prepare the insert query
+	stmt, err := db.Prepare("INSERT INTO RefreshTokens (id, exp, user) VALUES (?, ?, ?)")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(token, exp, userId)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

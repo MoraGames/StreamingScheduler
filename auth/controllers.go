@@ -26,6 +26,14 @@ func login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get user info
+	user, err := GetUserByEmail(params.Email)
+	if err != nil {
+		http.Error(w, "Account doesn't exist", http.StatusBadRequest)
+		return
+	}
+
+	//TODO: Si potrebbe togliere
 	//Verify password and email
 	isValid, err := loginService(params.Email, params.Password)
 	if err != nil {
@@ -99,7 +107,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Add new refresh token to database
-	err = jwt.AddToDB(dbConn, tokenPair.Refresh.Token, tokenPair.Refresh.Obj.Exp)
+	err = jwt.AddToDB(dbConn, tokenPair.Refresh.Token, tokenPair.Refresh.Obj.Exp, user.Id)
 	if err != nil {
 		log.Error("General", ip, "ApiLogin", "Database operation error: "+err.Error())
 		utils.PrintInternalErr(w)
@@ -193,7 +201,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Save refresh token in the database
-	err = jwt.AddToDB(dbConn, refToken.RefreshId, refToken.Exp)
+	err = jwt.AddToDB(dbConn, refToken.RefreshId, refToken.Exp, lastId)
 	if err != nil {
 		log.Error("Database error to add refresh token: " + err.Error())
 		utils.PrintInternalErr(w)
