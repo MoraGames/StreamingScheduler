@@ -12,6 +12,7 @@ import (
 
 type JWTRefreshMetadata struct {
 	RefreshId string
+	UserId    int64
 	Email     string
 	Exp       int64
 }
@@ -31,6 +32,7 @@ func (jm *JWTRefreshMetadata) GenerateToken(refreshPass string) (string, error) 
 	rtClaims := jwt.MapClaims{}
 	rtClaims["refreshId"] = jm.RefreshId
 	rtClaims["email"] = jm.Email
+	rtClaims["userId"] = jm.UserId
 	rtClaims["exp"] = jm.Exp
 	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
 	refreshToken, err := rt.SignedString([]byte(refreshPass))
@@ -75,6 +77,11 @@ func ExtractRefreshMetadata(tokenString, secret string) (*JWTRefreshMetadata, er
 			return nil, err
 		}
 
+		userId, err := strconv.ParseInt(fmt.Sprintf("%.f", claims["userId"]), 10, 64)
+		if err != nil {
+			return nil, errors.New("UserId error: " + err.Error())
+		}
+
 		email, ok := claims["email"].(string)
 		if !ok {
 			return nil, errors.New("Email error!")
@@ -82,6 +89,7 @@ func ExtractRefreshMetadata(tokenString, secret string) (*JWTRefreshMetadata, er
 
 		return &JWTRefreshMetadata{
 			RefreshId: refreshId,
+			UserId:    userId,
 			Email:     email,
 			Exp:       exp,
 		}, nil

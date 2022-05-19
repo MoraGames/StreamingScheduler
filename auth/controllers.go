@@ -61,8 +61,6 @@ func login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Infoln(user)
-
 	tokenPair := jwt.NewJWTokenPair(
 		accessExp,
 		refreshExp,
@@ -73,6 +71,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	tokenPair.Access.Obj.Company = os.Getenv("JWT_COMPANY")
 	tokenPair.Access.Obj.Permission = user.Permissions.ToString()
 	tokenPair.Refresh.Obj.Email = params.Email
+	tokenPair.Refresh.Obj.UserId = user.Id
 	tokenPair.Refresh.Obj.RefreshId = utils.GenerateID()
 
 	err = tokenPair.GenerateTokenPair(os.Getenv("JWT_AT_PWD"), os.Getenv("JWT_RT_PWD"))
@@ -91,7 +90,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Add new refresh token to database
-	err = jwt.AddToDB(dbConn, tokenPair.Refresh.Token, tokenPair.Refresh.Obj.Exp, user.Id)
+	err = jwt.AddToDB(dbConn, tokenPair.Refresh.Obj.RefreshId, tokenPair.Refresh.Obj.Exp, user.Id)
 	if err != nil {
 		log.Error("General", ip, "ApiLogin", "Database operation error: "+err.Error())
 		utils.PrintInternalErr(w)
@@ -280,4 +279,132 @@ func verify(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write([]byte("{\"state\": \"success\"}"))
+}
+
+func refreshToken(w http.ResponseWriter, r *http.Request) {
+
+	// Get client ip
+	ip := utils.GetIP(r)
+
+	//Get token from cookies
+	cookieData, err := utils.GetCookies(r, os.Getenv("JWT_ISS"), os.Getenv("COOKIE_SECRET"))
+	if err != nil {
+		log.Error("Error to get cookies: " + err.Error())
+		utils.PrintErr(w, "")
+		return
+	}
+
+	token := cookieData["RefreshToken"]
+
+	//Extract data from token
+	data, err := jwt.ExtractRefreshMetadata(token, os.Getenv("JWT_RT_PWD"))
+	if err != nil {
+		log.Error("Extract refresh token error: " + err.Error())
+		utils.PrintErr(w, "Cookies Not valid")
+		return
+	}
+
+	//Check validity
+	ok, err := jwt.VerifyRefreshToken(dbConn, data.UserId, data.RefreshId)
+	if err != nil {
+		log.Error("error to verify refresh token:", err)
+		utils.PrintInternalErr(w)
+		return
+	}
+
+	if !ok {
+		utils.PrintErr(w, "Token not valid")
+		return
+	}
+
+	if !jwt.VerifyExpireDate(data.Exp) {
+		http.Error(w, `{"code": 401, "msg": "Token expired! Login required!"}`, http.StatusUnauthorized)
+		return
+	}
+
+	//Remove old refresh token
+	err = jwt.RemoveRefreshToken(dbConn, token)
+	if err != nil {
+		log.Error(fmt.Sprintf("Error to remove old token '%s': %s", token, err.Error()))
+	}
+
+	//Check token expired
+	err = jwt.CheckOldsToken(dbConn, data.Email)
+	if err != nil {
+		log.Error("Check old tokens error: " + err.Error())
+		utils.PrintInternalErr(w)
+		return
+	}
+
+	// get user info
+	user, err := GetUserById(data.UserId)
+	if err != nil {
+		log.Error("Error to get user info:", err.Error())
+		utils.PrintInternalErr(w)
+		return
+	}
+
+	// get access token expiration
+	accessExp, err := strconv.Atoi(os.Getenv("JWT_AT_EXP"))
+	if err != nil {
+		log.Error("Error to get access token expiration: " + err.Error())
+		utils.PrintInternalErr(w)
+		return
+	}
+
+	// get refresh token expiration
+	refreshExp, err := strconv.Atoi(os.Getenv("JWT_RT_EXP"))
+	if err != nil {
+		log.Error("Error to get refresh token expiration: " + err.Error())
+		utils.PrintInternalErr(w)
+		return
+	}
+
+	tokenPair := jwt.NewJWTokenPair(
+		accessExp,
+		refreshExp,
+	)
+	tokenPair.Access.Obj.Email = data.Email
+	tokenPair.Access.Obj.Iss = os.Getenv("JWT_ISS")
+	tokenPair.Access.Obj.Iat = time.Now().Unix()
+	tokenPair.Access.Obj.Company = os.Getenv("JWT_COMPANY")
+	tokenPair.Access.Obj.Permission = user.Permissions.ToString()
+	tokenPair.Refresh.Obj.Email = user.Email
+	tokenPair.Refresh.Obj.UserId = user.Id
+	tokenPair.Refresh.Obj.RefreshId = utils.GenerateID()
+
+	err = tokenPair.GenerateTokenPair(os.Getenv("JWT_AT_PWD"), os.Getenv("JWT_RT_PWD"))
+	if err != nil {
+		log.Error("General", ip, "ApiLogin", "Error to generate token pair: "+err.Error())
+		utils.PrintInternalErr(w)
+		return
+	}
+
+	//Set Cookies
+	err = utils.SetCookies(w, tokenPair.Refresh.Token, os.Getenv("JWT_ISS"), os.Getenv("COOKIE_SECRET"))
+	if err != nil {
+		log.Error("Error to set cookies: " + err.Error())
+		utils.PrintInternalErr(w)
+		return
+	}
+
+	// Add new refresh token to database
+	err = jwt.AddToDB(dbConn, tokenPair.Refresh.Obj.RefreshId, tokenPair.Refresh.Obj.Exp, data.UserId)
+	if err != nil {
+		log.Error("Database operation error: " + err.Error())
+		utils.PrintInternalErr(w)
+		return
+	}
+
+	data2, err := json.Marshal(map[string]string{
+		"AccessToken": tokenPair.Access.Token,
+		"Expiration":  fmt.Sprint(tokenPair.Access.Obj.Exp),
+	})
+	if err != nil {
+		log.Info("Error to create AccessToken JSON: " + err.Error())
+		utils.PrintInternalErr(w)
+		return
+	}
+
+	w.Write(data2)
 }

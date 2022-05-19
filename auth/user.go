@@ -112,7 +112,7 @@ func GetUserById(id int64) (*User, error) {
 
 	// Do the query
 	err := dbConn.QueryRow(
-		"SELECT id, username, email, password, profilePicture, enabled, permissions FROM Users WHERE email = ?",
+		"SELECT id, username, email, password, profilePicture, enabled, permissions FROM Users WHERE id = ?",
 		id,
 	).Scan(&user.Id, &user.Username, &user.Email, &user.Password, &profileImg, &user.Enabled, &perm)
 

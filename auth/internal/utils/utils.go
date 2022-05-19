@@ -125,3 +125,17 @@ func ParseTemplate(tmpl string, data interface{}) (string, error) {
 
 	return buf.String(), nil
 }
+
+func GetCookies(r *http.Request, tokenIss, cookieKey string) (map[string]string, error) {
+
+	var s = securecookie.New([]byte(cookieKey), nil)
+
+	if cookie, err := r.Cookie(tokenIss); err == nil {
+		value := make(map[string]string)
+		if err = s.Decode(tokenIss, cookie.Value, &value); err == nil {
+			return value, nil
+		}
+	}
+
+	return nil, errors.New("Cookies not valid!")
+}
