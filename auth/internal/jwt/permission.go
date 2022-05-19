@@ -37,22 +37,27 @@ func (p Permission) ToString() string {
 	return string(p)
 }
 
-func GetPermissionFromDB(db *sql.DB, email string) (Permission, error) {
+// GetPermissionFromDB is a function that gets the user permissions
+func GetPermissionFromDB(db *sql.DB, userId int64) (Permission, error) {
+
+	var perm string
 
 	//Get permissions
-	// TODO: Connect new db for get permissions
-	/*
-	document, err := db.Client.C.Collection("User").Doc(email).Get(db.Client.Ctx)
+	q, err := db.Prepare(`SELECT permissions FROM Users WHERE id = ?`)
 	if err != nil {
 		return "", err
 	}
-	data := document.Data()
 
-	permString := data["Permission"].(string)
-	return Permission(permString), nil
-	 */
+	row, err := q.Query(userId)
+	if err != nil {
+		return "", err
+	}
 
-	return "", nil
+	for row.Next() {
+		row.Scan(&perm)
+	}
+
+	return Permission(perm), nil
 }
 
 func IsAuthorized(perms []Permission, permsRequire ...Permission) bool {

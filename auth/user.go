@@ -3,30 +3,33 @@ package main
 import (
 	"database/sql"
 	"errors"
+	"github.com/MoraGames/StreamingScheduler/auth/internal/jwt"
 	"strings"
 )
 
 type User struct {
 	// TODO: Define user
 
-	Id             int64  `json:"-"`
-	Email          string `json:"email"`
-	Username       string `json:"username"`
-	Password       string `json:"password"`
-	ProfilePicture string `json:"profilePicture,omitempty"`
-	Enabled        bool   `json:"-"`
+	Id             int64          `json:"-"`
+	Email          string         `json:"email"`
+	Username       string         `json:"username"`
+	Password       string         `json:"password"`
+	ProfilePicture string         `json:"profilePicture,omitempty"`
+	Enabled        bool           `json:"-"`
+	Permissions    jwt.Permission `json:"permissions"`
 }
 
+//NewUser is a user method that creates the new user in the database
 func (u *User) NewUser() (int64, error) {
 
 	// prepare the insert query
-	stmt, err := dbConn.Prepare("INSERT INTO Users (email, username, password) VALUES (?, ?, ?)")
+	stmt, err := dbConn.Prepare("INSERT INTO Users (email, username, password, permissions) VALUES (?, ?, ?, ?)")
 	if err != nil {
 		return -1, err
 	}
 	defer stmt.Close()
 
-	res, err := stmt.Exec(u.Email, u.Username, u.Password)
+	res, err := stmt.Exec(u.Email, u.Username, u.Password, u.Permissions)
 	if err != nil {
 		return -1, err
 	}
@@ -35,7 +38,7 @@ func (u *User) NewUser() (int64, error) {
 	return res.LastInsertId()
 }
 
-//IsValid verifica che i dati utente inviati dal client in fase di registrazione siano corretti.
+//IsValid is a function that check the user info validity
 func (u *User) IsValid() error {
 
 	//Check email
@@ -54,6 +57,7 @@ func (u *User) IsValid() error {
 	return nil
 }
 
+// Exist is a function that checks if the user already exist
 func (u *User) Exist() (bool, error) {
 
 	var exists bool
@@ -65,6 +69,7 @@ func (u *User) Exist() (bool, error) {
 	return exists, nil
 }
 
+// Active is a function that sets the user to enable
 func (u *User) Active() error {
 
 	_, err := dbConn.Query(`UPDATE Users SET enabled=true WHERE id = ?`, u.Id)
@@ -75,48 +80,48 @@ func (u *User) Active() error {
 	return nil
 }
 
+// GetUserByEmail is a function that gets user information from email
 func GetUserByEmail(email string) (*User, error) {
 
 	var user User
+	var perm string
+	var profileImg sql.NullString
 
-	// prepare the insert query
-	stmt, err := dbConn.Prepare("SELECT * FROM Users WHERE email = ?")
+	// Do the query
+	err := dbConn.QueryRow(
+		"SELECT id, username, email, password, profilePicture, enabled, permissions FROM Users WHERE email = ?",
+		email,
+	).Scan(&user.Id, &user.Username, &user.Email, &user.Password, &profileImg, &user.Enabled, &perm)
+
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
-	defer stmt.Close()
 
-	rows, err := stmt.Query(email)
-	if err != nil {
-		return nil, err
-	}
-
-	for rows.Next() {
-		rows.Scan(&user.Id, &user.Username, &user.Email, &user.Password, &user.ProfilePicture, &user.Enabled)
-	}
-
+	user.Permissions = jwt.Permission(perm)
+	user.ProfilePicture = profileImg.String
 	return &user, nil
 }
 
+// GetUserById is a function that gets user information from id
 func GetUserById(id int64) (*User, error) {
 
 	var user User
+	var perm string
+	var profileImg sql.NullString
 
-	// prepare the insert query
-	stmt, err := dbConn.Prepare("SELECT * FROM Users WHERE id = ?")
+	// Do the query
+	err := dbConn.QueryRow(
+		"SELECT id, username, email, password, profilePicture, enabled, permissions FROM Users WHERE email = ?",
+		id,
+	).Scan(&user.Id, &user.Username, &user.Email, &user.Password, &profileImg, &user.Enabled, &perm)
+
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
-	defer stmt.Close()
 
-	rows, err := stmt.Query(id)
-	if err != nil {
-		return nil, err
-	}
-
-	for rows.Next() {
-		rows.Scan(&user.Id, &user.Username, &user.Email, &user.Password, &user.ProfilePicture, &user.Enabled)
-	}
-
+	user.Permissions = jwt.Permission(perm)
+	user.ProfilePicture = profileImg.String
 	return &user, nil
 }

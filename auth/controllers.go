@@ -29,37 +29,19 @@ func login(w http.ResponseWriter, r *http.Request) {
 	// Get user info
 	user, err := GetUserByEmail(params.Email)
 	if err != nil {
-		http.Error(w, "Account doesn't exist", http.StatusBadRequest)
-		return
-	}
-
-	//TODO: Si potrebbe togliere
-	//Verify password and email
-	isValid, err := loginService(params.Email, params.Password)
-	if err != nil {
-
-		if err.Error() == "inactive" {
-			http.Error(w, `{"code": 401, "msg": "Account unactivated!"}`, http.StatusUnauthorized)
-			return
-		}
-
-		//Nel caso in cui non è corretto perchè non c'è nel database
 		utils.PrintErr(w, "Incorrect username or password")
 		return
 	}
 
-	if isValid == false {
-
-		//Nel caso in cui c'è nel database ma non è corretta la password
+	// verify password and email
+	if (user.Password != params.Password) || (user.Email != params.Email) {
 		utils.PrintErr(w, "Incorrect username or password")
 		return
 	}
 
-	//Generate tokens
-	perm, err := jwt.GetPermissionFromDB(dbConn, params.Email)
-	if err != nil {
-		log.Error("General", ip, "ApiLogin", "Error to get user permission from db: "+err.Error())
-		utils.PrintInternalErr(w)
+	// verify account active
+	if !user.Enabled {
+		http.Error(w, `{"code": 401, "msg": "Account inactive!"}`, http.StatusUnauthorized)
 		return
 	}
 
@@ -79,6 +61,8 @@ func login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Infoln(user)
+
 	tokenPair := jwt.NewJWTokenPair(
 		accessExp,
 		refreshExp,
@@ -87,7 +71,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	tokenPair.Access.Obj.Iss = os.Getenv("JWT_ISS")
 	tokenPair.Access.Obj.Iat = time.Now().Unix()
 	tokenPair.Access.Obj.Company = os.Getenv("JWT_COMPANY")
-	tokenPair.Access.Obj.Permission = perm.ToString()
+	tokenPair.Access.Obj.Permission = user.Permissions.ToString()
 	tokenPair.Refresh.Obj.Email = params.Email
 	tokenPair.Refresh.Obj.RefreshId = utils.GenerateID()
 
@@ -154,6 +138,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 	u.Username = user.Username
 	u.Password = user.Password
 	u.ProfilePicture = user.ProfilePicture
+	u.Permissions = jwt.Permission("u")
 
 	err = u.IsValid()
 	if err != nil {
