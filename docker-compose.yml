@@ -1,18 +1,80 @@
 version: "3.9"
 
+networks:
+  net:
+    driver: bridge
+
 services:
+
+  traefik:
+    image: traefik:2.4
+    container_name: traefik
+    volumes:
+      - .config/traefik:/etc/traefik
+      - /var/run/docker.sock:/var/run/docker.sock
+      - .logs/traefik/logs:/logs
+    networks:
+      - net
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.api.rule=Host(`traefik.streamtv.it`)'
+      - 'traefik.http.routers.api.entrypoints=https'
+      - 'traefik.http.routers.api.service=api@internal'
+      - 'traefik.http.routers.api.tls=true'
+      - 'traefik.http.routers.api.tls.options=default'
+      - 'tls.stores.default.defaultCertificate.certFile=/etc/cert/cert.pem'
+      - 'tls.stores.default.defaultCertificate.keyFile=/etc/cert/key.pem'
+      #- 'traefik.http.routers.api.middlewares=authelia@docker'
+
+      #SSL configuration
+      - traefik.http.routers.traefik-ssl.entryPoints=https
+      - traefik.http.routers.traefik-ssl.rule=host(`traefik.${DOMAIN}`)
+      #- traefik.http.routers.traefik-ssl.middlewares=sso@file
+      - traefik.http.routers.traefik-ssl.tls=true
+
+    ports:
+      - 80:80
+      - 443:443
+    command:
+      - '--api'
+      - '--providers.docker=true'
+      - '--providers.docker.exposedByDefault=false'
+      - '--providers.file.filename=/etc/traefik/certificates.yml'
+      - '--entrypoints.http=true'
+      - '--entrypoints.http.address=:80'
+      - '--entrypoints.http.http.redirections.entrypoint.to=https'
+      - '--entrypoints.http.http.redirections.entrypoint.scheme=https'
+      - '--entrypoints.https=true'
+      - '--entrypoints.https.address=:443'
+      - '--log=true'
+      - '--log.level=DEBUG'
+      - '--api.insecure=true'
+
   auth:
     build:
       context: ./auth
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    labels:
+      - traefik.enable=true
+      - traefik.backend=auth
+      - traefik.docker.network=net
+
+      # SSL configuration
+      - traefik.http.routers.whoami.entryPoints=https
+      - traefik.http.routers.whoami.rule=host(`auth.${DOMAIN}`)
+      - traefik.http.routers.whoami.tls=true
     env_file:
       auth.env
+    networks:
+      - net
 
   mariadb:
     image: lscr.io/linuxserver/mariadb
     container_name: mariadb
+    networks:
+      - net
     environment:
       - PUID=1000
       - PGID=1000
