@@ -66,7 +66,7 @@ services:
       - traefik.http.routers.whoami.rule=host(`auth.${DOMAIN}`)
       - traefik.http.routers.whoami.tls=true
     env_file:
-      auth.env
+      auth/.env
     networks:
       - net
 

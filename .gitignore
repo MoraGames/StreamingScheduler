@@ -1,5 +1,4 @@
 .idea
 .sql
-auth.env
 .env
 .logs
