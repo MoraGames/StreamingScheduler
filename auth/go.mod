@@ -4,6 +4,8 @@ replace github.com/MoraGames/StreamingScheduler/auth/internal/jwt => ./internal/
 
 replace github.com/MoraGames/StreamingScheduler/auth/internal/mail => ./internal/mail
 
+replace github.com/MoraGames/StreamingScheduler/auth/internal/models => ./internal/models
+
 replace github.com/MoraGames/StreamingScheduler/auth/internal/utils => ./internal/utils
 
 go 1.17
