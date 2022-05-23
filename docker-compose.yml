@@ -104,6 +104,15 @@ services:
     networks:
       - newNet
 
+  monitor:
+    build:
+      context: ./monitor
+      dockerfile: Dockerfile
+    env_file:
+      monitor/.env
+    networks:
+      - newNet
+
   mariadb:
     image: lscr.io/linuxserver/mariadb
     container_name: mariadb
