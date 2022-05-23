@@ -78,9 +78,9 @@ services:
     networks:
       - newNet
 
-  core:
+  api:
     build:
-      context: ./core
+      context: api
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
@@ -100,7 +100,7 @@ services:
       - "traefik.http.middlewares.testheader.headers.addvaryheader=true"
       - traefik.http.routers.service.middlewares=serviceheaders
     env_file:
-      core/.env
+      api/.env
     networks:
       - newNet
 
