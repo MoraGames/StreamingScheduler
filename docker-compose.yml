@@ -83,7 +83,7 @@ services:
       context: ./core
       dockerfile: Dockerfile
     ports:
-      - "5001:5001"
+      - "3000:3000"
     labels:
       - traefik.enable=true
       - traefik.backend=api
@@ -100,7 +100,7 @@ services:
       - "traefik.http.middlewares.testheader.headers.addvaryheader=true"
       - traefik.http.routers.service.middlewares=serviceheaders
     env_file:
-      auth/.env
+      core/.env
     networks:
       - newNet
 
@@ -120,7 +120,23 @@ services:
       #- REMOTE_SQL=http://URL1/your.sql,https://URL2/your.sql #optional
     volumes:
       - ./.sql:/config
+    labels:
+      - traefik.enable=true
+      - traefik.backend=rtmp
+      - traefik.docker.network=net
+      - traefik.http.routers.rtmp.entryPoints=http
+      - traefik.http.routers.rtmp.rule=host(`rtmp.${DOMAIN}`)
+      - traefik.http.routers.rtmp.tls=false
     ports:
       - 3306:3306
     restart: unless-stopped
 
+  rtmp:
+    image: alqutami/rtmp-hls
+    container_name: rtmp-server
+    networks:
+      - newNet
+    ports:
+      - 8080:8080
+      - 1935:1935
+    restart: unless-stopped
