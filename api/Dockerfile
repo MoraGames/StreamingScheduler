@@ -15,7 +15,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o /core
+RUN go build -o /api
 
 ##
 ## Deploy
@@ -24,10 +24,10 @@ FROM gcr.io/distroless/base-debian10
 
 WORKDIR /
 
-COPY --from=build /core /core
+COPY --from=build /api /api
 
 EXPOSE 5001
 
 #USER nonroot:nonroot
 
-ENTRYPOINT ["/core"]
+ENTRYPOINT ["/api"]

@@ -1,8 +1,9 @@
-package core
+package main
 
 import (
 	"database/sql"
 	"fmt"
+	"github.com/gorilla/handlers"
 	"net/http"
 	"os"
 	"time"
@@ -55,8 +56,14 @@ func main() {
 
 	port := os.Getenv("PORT")
 
+	router := NewRouter()
+	credentials := handlers.AllowCredentials()
+	headersOk := handlers.AllowedHeaders([]string{"*"})
+	methods := handlers.AllowedMethods([]string{"*"})
+	origins := handlers.AllowedOrigins([]string{"*"})
+
 	srv := &http.Server{
-		Handler: NewRouter(),
+		Handler: handlers.CORS(credentials, methods, origins, headersOk)(router),
 		Addr:    ":" + port,
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
