@@ -9,7 +9,7 @@ type Language struct {
 // NewLanguage is a function that adds a new language into database
 func NewLanguage(language Language) (int64, error) {
 
-	qp, err := DbConn.Prepare(`INSERT INTO LANGUAGES(abbreviation, name) VALUES (?, ?)`)
+	qp, err := DbConn.Prepare(`INSERT INTO Languages(abbreviation, name) VALUES (?, ?)`)
 	if err != nil {
 		return -1, err
 	}
