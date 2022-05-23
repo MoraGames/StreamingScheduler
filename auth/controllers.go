@@ -13,6 +13,7 @@ import (
 )
 
 func login(w http.ResponseWriter, r *http.Request) {
+
 	ip := utils.GetIP(r)
 
 	var params struct {
@@ -236,7 +237,7 @@ func verify(w http.ResponseWriter, r *http.Request) {
 	p, err := utils.GetParams(params, r)
 	if err != nil {
 		log.Error("General", ip, "ApiConfirmSignup", "Error to get params: "+err.Error())
-		utils.PrintInternalErr(w)
+		utils.PrintErr(w, err.Error())
 		return
 	}
 

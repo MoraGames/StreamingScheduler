@@ -94,6 +94,7 @@ func SetCookies(w http.ResponseWriter, token, tokenIss, cookieKey string) error 
 			Value:    encoded,
 			Secure:   false,
 			HttpOnly: false,
+			SameSite: http.SameSiteNoneMode,
 			Path:     "/",
 		}
 		fmt.Println("COOKIE", cookie)
