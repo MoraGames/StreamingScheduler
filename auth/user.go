@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/MoraGames/StreamingScheduler/auth/internal/jwt"
+	"github.com/MoraGames/StreamingScheduler/auth/internal/password"
 	"strings"
 )
 
@@ -22,7 +23,9 @@ type User struct {
 //NewUser is a user method that creates the new user in the database
 func (u *User) NewUser() (int64, error) {
 
-	// TODO: Aggiungi offuscamento password
+	// replace the plaintext password with the hashed password
+	hash := password.NewSHA3_512Password([]byte(u.Password))
+	u.Password = hash.ToString()
 
 	// prepare the insert query
 	stmt, err := dbConn.Prepare("INSERT INTO Users (email, username, password, permissions) VALUES (?, ?, ?, ?)")
