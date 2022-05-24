@@ -47,7 +47,7 @@ func NewRouter() *mux.Router {
 	r.HandleFunc(ApiPrefix+"/titles/{id}", controllers.GetTitle).Methods(http.MethodGet)
 
 	// Users routes
-	r.HandleFunc(ApiPrefix+"/users/{id}", controllers.GetCurrentUser).Methods(http.MethodGet)
+	r.HandleFunc(ApiPrefix+"/me", controllers.GetCurrentUser).Methods(http.MethodGet)
 	//r.HandleFunc(ApiPrefix+"/users/{id}", controllers.GetUser).Methods(http.MethodGet)
 
 	// Service routes

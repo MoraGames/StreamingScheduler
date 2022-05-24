@@ -1,27 +1,15 @@
 package controllers
 
 import (
-	"github.com/gorilla/mux"
 	"io"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 func GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 
-	// Get path params
-	params := mux.Vars(r)
-
-	// Convert id to int64
-	id, err := strconv.ParseInt(params["id"], 10, 64)
-	if err != nil {
-		PrintErr(w, "invalid id")
-		return
-	}
-
 	// create request
-	req, err := http.NewRequest(http.MethodGet, "http://auth.streamtv.it/api/v1/info", nil)
+	req, err := http.NewRequest(http.MethodGet, "http://auth:5000/api/v1/info", nil)
 	if err != nil {
 		log.Println("error to create the request", err)
 		PrintInternalErr(w)

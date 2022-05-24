@@ -72,6 +72,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	tokenPair.Access.Obj.Iat = time.Now().Unix()
 	tokenPair.Access.Obj.Company = os.Getenv("JWT_COMPANY")
 	tokenPair.Access.Obj.Permission = user.Permissions.ToString()
+	tokenPair.Access.Obj.UserId = user.Id
 	tokenPair.Refresh.Obj.Email = params.Email
 	tokenPair.Refresh.Obj.UserId = user.Id
 	tokenPair.Refresh.Obj.RefreshId = utils.GenerateID()
@@ -237,7 +238,7 @@ func verify(w http.ResponseWriter, r *http.Request) {
 
 	p, err := utils.GetParams(params, r)
 	if err != nil {
-		log.Error("General", ip, "ApiConfirmSignup", "Error to get params: "+err.Error())
+		log.Error("Error to get params: " + err.Error())
 		utils.PrintErr(w, err.Error())
 		return
 	}
@@ -246,7 +247,7 @@ func verify(w http.ResponseWriter, r *http.Request) {
 	user, err := GetUserByEmail(p["email"].(string))
 	if err != nil {
 		log.Error("Error to get user info:", err.Error())
-		utils.PrintInternalErr(w)
+		utils.PrintErr(w, "User doesn't exist")
 		return
 	}
 
@@ -413,8 +414,6 @@ func refreshToken(w http.ResponseWriter, r *http.Request) {
 
 func info(w http.ResponseWriter, r *http.Request) {
 
-	var u User
-
 	// Get token jwt
 	auth := r.Header.Get("Authorization")
 	token := strings.Split(auth, " ")[1]
@@ -422,21 +421,23 @@ func info(w http.ResponseWriter, r *http.Request) {
 	// get userId
 	metadata, err := jwt.ExtractAccessMetadata(token, os.Getenv("JWT_AT_PWD"))
 	if err != nil {
+		//TODO: Si, soffro anche io
+		if err.Error() == "Token is expired" {
+			http.Error(w, err.Error(), 484)
+			return
+		}
+
 		log.Error("error to retrieve the jwt access token metadata:", err)
 		utils.PrintInternalErr(w)
 		return
 	}
 
 	// Get user info from db
-	rows, err := dbConn.Query(`SELECT * FROM Users WHERE id = ?`, metadata.UserId)
+	u, err := GetUserById(metadata.UserId)
 	if err != nil {
-		log.Error("error to retrieve user info:", err)
+		log.Error("erro to retrieve the user info:", err)
 		utils.PrintInternalErr(w)
 		return
-	}
-
-	for rows.Next() {
-		rows.Scan(&u.Id, &u.Username, &u.Email, &u.Password, &u.ProfilePicture, &u.Enabled, &u.Permissions)
 	}
 
 	// Create json response

@@ -83,14 +83,14 @@ services:
       context: api
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "5001:5001"
     labels:
       - traefik.enable=true
       - traefik.backend=api
       - traefik.docker.network=net
-      - traefik.http.routers.api.entryPoints=http
-      - traefik.http.routers.api.rule=host(`api.${DOMAIN}`)
-      - traefik.http.routers.api.tls=false
+      - traefik.http.routers.apiRoute.entryPoints=http
+      - traefik.http.routers.apiRoute.rule=host(`api.${DOMAIN}`)
+      - traefik.http.routers.apiRoute.tls=false
 
       # CORS configuration
       - "traefik.http.middlewares.testheader.headers.accesscontrolallowmethods=*"

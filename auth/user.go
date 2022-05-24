@@ -22,6 +22,8 @@ type User struct {
 //NewUser is a user method that creates the new user in the database
 func (u *User) NewUser() (int64, error) {
 
+	// TODO: Aggiungi offuscamento password
+
 	// prepare the insert query
 	stmt, err := dbConn.Prepare("INSERT INTO Users (email, username, password, permissions) VALUES (?, ?, ?, ?)")
 	if err != nil {
