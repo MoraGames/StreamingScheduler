@@ -1,7 +1,7 @@
 package models
 
 type Language struct {
-	Id           int64  `json:"id"`
+	Id           int64  `json:"id,omitempty"`
 	Abbreviation string `json:"abbreviation,omitempty"`
 	Name         string `json:"name"`
 }

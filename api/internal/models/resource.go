@@ -1,7 +1,7 @@
 package models
 
 type Resource struct {
-	Id        int64     `json:"id"`
+	Id        int64     `json:"id,omitempty"`
 	Url       string    `json:"url"`
 	Language  *Language `json:"language,omitempty"`
 	Subtitles *Language `json:"subtitles,omitempty"`

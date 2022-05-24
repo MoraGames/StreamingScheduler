@@ -1,7 +1,7 @@
 package models
 
 type Episode struct {
-	Id             int64   `json:"id"`
+	Id             int64   `json:"id,omitempty"`
 	Series         *Series `json:"series"`
 	Number         int     `json:"number,omitempty"`
 	OriginalTitle  *Title  `json:"originalTitle,omitempty"`

@@ -1,7 +1,7 @@
 package models
 
 type Quality struct {
-	Id         int64  `json:"id"`
+	Id         int64  `json:"id,omitempty"`
 	Quality    string `json:"quality"`
 	Resolution string `json:"resolution,omitempty"`
 }

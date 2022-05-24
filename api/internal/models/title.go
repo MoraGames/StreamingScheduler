@@ -1,7 +1,7 @@
 package models
 
 type Title struct {
-	Id       int64     `json:"id"`
+	Id       int64     `json:"id,omitempty"`
 	Title    string    `json:"title"`
 	Language *Language `json:"language"`
 }

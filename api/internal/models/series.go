@@ -1,7 +1,7 @@
 package models
 
 type Series struct {
-	Id             int64   `json:"id"`
+	Id             int64   `json:"id,omitempty"`
 	OriginalTitle  *Title  `json:"originalTitle"`
 	Plot           string  `json:"plot,omitempty"`
 	Format         *Format `json:"format"`

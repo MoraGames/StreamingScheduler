@@ -1,7 +1,7 @@
 package models
 
 type Format struct {
-	Id   int64  `json:"id"`
+	Id   int64  `json:"id,omitempty"`
 	Type string `json:"type"`
 }
 
