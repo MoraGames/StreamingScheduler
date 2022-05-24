@@ -41,10 +41,19 @@ func GetLanguageById(id int64) (*Language, error) {
 		rows.Scan(&lang.Id, &lang.Abbreviation, &lang.Name)
 	}
 
-	// Check lang exist
-	if lang.Id == 0 {
-		return nil, nil
+	return &lang, nil
+}
+
+// Exist Check if the language exist
+func (l *Language) Exist() (bool, error) {
+	lang, err := GetLanguageById(l.Id)
+	if err != nil {
+		return false, err
 	}
 
-	return &lang, nil
+	if lang.Id == 0 {
+		return false, nil
+	}
+
+	return true, nil
 }

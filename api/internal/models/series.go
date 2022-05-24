@@ -74,11 +74,6 @@ func GetSeriesById(id int64) (*Series, error) {
 		rows.Scan(&series.Id, series.OriginalTitle, series.Plot, series.Format, series.Favorites, series.AgeRestriction)
 	}
 
-	// Check lang exist
-	if series.Id == 0 {
-		return nil, nil
-	}
-
 	return &series, nil
 }
 

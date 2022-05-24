@@ -1,7 +1,7 @@
 package models
 
 type Format struct {
-	Id   int    `json:"id"`
+	Id   int64  `json:"id"`
 	Type string `json:"type"`
 }
 
@@ -40,10 +40,19 @@ func GetFormatById(id int64) (*Format, error) {
 		rows.Scan(&f.Id, &f.Type)
 	}
 
-	// Check lang exist
-	if f.Id == 0 {
-		return nil, nil
+	return &f, nil
+}
+
+// Exist Check if the language exist
+func (f *Format) Exist() (bool, error) {
+	format, err := GetFormatById(f.Id)
+	if err != nil {
+		return false, err
 	}
 
-	return &f, nil
+	if format.Id == 0 {
+		return false, nil
+	}
+
+	return true, nil
 }

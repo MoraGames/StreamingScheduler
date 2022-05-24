@@ -1,7 +1,7 @@
 package models
 
 type Title struct {
-	Id       int       `json:"id"`
+	Id       int64     `json:"id"`
 	Title    string    `json:"title"`
 	Language *Language `json:"language"`
 }
@@ -54,11 +54,6 @@ func GetTitleById(id int64) (*Title, error) {
 		rows.Scan(&title.Id, &title.Title, &langId)
 	}
 
-	// Check title
-	if title.Id == 0 {
-		return nil, nil
-	}
-
 	// get language info of the title from db
 	title.Language, err = GetLanguageById(langId)
 	if err != nil {
@@ -66,4 +61,19 @@ func GetTitleById(id int64) (*Title, error) {
 	}
 
 	return &title, nil
+}
+
+// Exist is a title method that checks if title exist in the database
+func (t *Title) Exist() (bool, error) {
+
+	title, err := GetTitleById(t.Id)
+	if err != nil {
+		return false, err
+	}
+
+	if title.Id == 0 {
+		return false, nil
+	}
+
+	return true, nil
 }
