@@ -15,6 +15,7 @@ type JWTAccessMetadata struct {
 	Exp        int64
 	Company    string
 	Email      string
+	UserId     int64
 	Permission string
 }
 
@@ -47,6 +48,11 @@ func ExtractAccessMetadata(tokenString, secret string) (*JWTAccessMetadata, erro
 			return nil, err
 		}
 
+		userId, err := strconv.ParseInt(fmt.Sprintf("%.f", claims["userId"]), 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
 		company, ok := claims["company"].(string)
 		if !ok {
 			return nil, err
@@ -68,6 +74,7 @@ func ExtractAccessMetadata(tokenString, secret string) (*JWTAccessMetadata, erro
 			Exp:        exp,
 			Company:    company,
 			Email:      email,
+			UserId:     userId,
 			Permission: perm,
 		}, nil
 	}
@@ -97,6 +104,7 @@ func (jm *JWTAccessMetadata) GenerateToken(jwtPass string) (string, error) {
 	atClaims["company"] = jm.Company
 	atClaims["email"] = jm.Email
 	atClaims["permission"] = jm.Permission
+	atClaims["userId"] = jm.UserId
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 	token, err := at.SignedString([]byte(jwtPass))
 	if err != nil {
@@ -145,6 +153,10 @@ func (jm *JWTAccessMetadata) check() error {
 
 	if jm.Permission == "" {
 		return errors.New("Permission not setted")
+	}
+
+	if jm.UserId == 0 {
+		return errors.New("user id not setted")
 	}
 
 	return nil
