@@ -3,6 +3,7 @@ package password
 import (
 	"crypto/rand"
 	"log"
+	"runtime"
 
 	"golang.org/x/crypto/argon2"
 )
@@ -20,7 +21,7 @@ func NewARGON2_IDPassword(password []byte) ARGON2_IDPassword {
 	}
 
 	//Generate the hash
-	hash := argon2.IDKey(password, salt, 1, 64*1024, 4, 64)
+	hash := argon2.IDKey(password, salt, 2, 64*1024, uint8(runtime.NumCPU()), 64)
 
 	//Generate the password
 	return ARGON2_IDPassword{salt, hash}
