@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -408,4 +409,43 @@ func refreshToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(data2)
+}
+
+func info(w http.ResponseWriter, r *http.Request) {
+
+	var u User
+
+	// Get token jwt
+	auth := r.Header.Get("Authorization")
+	token := strings.Split(auth, " ")[1]
+
+	// get userId
+	metadata, err := jwt.ExtractAccessMetadata(token, os.Getenv("JWT_AT_PWD"))
+	if err != nil {
+		log.Error("error to retrieve the jwt access token metadata:", err)
+		utils.PrintInternalErr(w)
+		return
+	}
+
+	// Get user info from db
+	rows, err := dbConn.Query(`SELECT * FROM Users WHERE id = ?`, metadata.UserId)
+	if err != nil {
+		log.Error("error to retrieve user info:", err)
+		utils.PrintInternalErr(w)
+		return
+	}
+
+	for rows.Next() {
+		rows.Scan(&u.Id, &u.Username, &u.Email, &u.Password, &u.ProfilePicture, &u.Enabled, &u.Permissions)
+	}
+
+	// Create json response
+	data, err := json.Marshal(u)
+	if err != nil {
+		utils.PrintInternalErr(w)
+		log.Error("error to create json response:", err)
+		return
+	}
+
+	w.Write(data)
 }
