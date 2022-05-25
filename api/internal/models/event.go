@@ -47,7 +47,7 @@ func (e *Event) NewEvent() (int64, error) {
 // GetEventById is a function that gets the event from the database by id
 func GetEventById(id int64) (*Event, error) {
 
-	var event Event
+	var e Event
 	var resourceId int64
 
 	qp, err := DbConn.Prepare(`SELECT * FROM Events WHERE id = ?`)
@@ -61,16 +61,16 @@ func GetEventById(id int64) (*Event, error) {
 	}
 
 	for rows.Next() {
-		rows.Scan(&event.Id, &event.Title, &event.Description, &event.StartTime, &event.EndTime, &resourceId)
+		rows.Scan(&e.Id, &e.Title, &e.Description, &e.StartTime, &e.EndTime, &resourceId)
 	}
 
 	// populate resource
-	event.Resource, err = GetResourceById(resourceId)
+	e.Resource, err = GetResourceById(resourceId)
 	if err != nil {
 		return nil, err
 	}
 
-	return &event, nil
+	return &e, nil
 }
 
 // Exist Check if the event exist
