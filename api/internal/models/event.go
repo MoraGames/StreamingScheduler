@@ -83,3 +83,34 @@ func (e *Event) Exist() (bool, error) {
 
 	return true, nil
 }
+
+// GetEvents function that gets all events
+func GetEvents() (events []*Event, err error) {
+
+	qp, err := DbConn.Prepare(`SELECT * FROM Events`)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := qp.Query()
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var event Event
+		var resourceId int64
+
+		rows.Scan(&event.Id, &event.Title, &event.Description, &event.Time, &resourceId)
+
+		// populate resource
+		event.Resource, err = GetResourceById(resourceId)
+		if err != nil {
+			return nil, err
+		}
+
+		events = append(events, &event)
+	}
+
+	return events, nil
+}

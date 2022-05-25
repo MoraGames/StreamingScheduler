@@ -20,6 +20,7 @@ func NewRouter() *mux.Router {
 
 	// Event routes
 	r.HandleFunc(ApiPrefix+"/events", controllers.CreateEvent).Methods(http.MethodPost)
+	r.HandleFunc(ApiPrefix+"/events", controllers.GetEvents).Methods(http.MethodGet)
 	r.HandleFunc(ApiPrefix+"/events/{id}", controllers.GetEvent).Methods(http.MethodGet)
 
 	// Format routes

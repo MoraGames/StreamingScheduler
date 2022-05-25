@@ -69,3 +69,23 @@ func GetEvent(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(data)
 }
+
+func GetEvents(w http.ResponseWriter, r *http.Request) {
+
+	// Get events from db
+	events, err := models.GetEvents()
+	if err != nil {
+		log.Println("error to get events from db:", err)
+		PrintInternalErr(w)
+		return
+	}
+
+	data, err := json.Marshal(events)
+	if err != nil {
+		log.Println("error to create events json:", err)
+		PrintInternalErr(w)
+		return
+	}
+
+	w.Write(data)
+}
