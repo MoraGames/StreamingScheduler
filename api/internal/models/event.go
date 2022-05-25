@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type Event struct {
 	Id          int64     `json:"id,omitempty"`
@@ -29,7 +31,7 @@ func (e *Event) NewEvent() (int64, error) {
 		e.Resource.Id = resource
 	}
 
-	qp, err := DbConn.Prepare(`INSERT INTO Events(title, description, startTime, endTime, resource) VALUES (?, ?, ?, ?, ?)`)
+	qp, err := DbConn.Prepare(`INSERT INTO Events(title, description, startTime, endTime, resource) VALUES (?, ?, ?, ?)`)
 	if err != nil {
 		return -1, err
 	}
@@ -44,7 +46,8 @@ func (e *Event) NewEvent() (int64, error) {
 
 // GetEventById is a function that gets the event from the database by id
 func GetEventById(id int64) (*Event, error) {
-	var e Event
+
+	var event Event
 	var resourceId int64
 
 	qp, err := DbConn.Prepare(`SELECT * FROM Events WHERE id = ?`)
@@ -58,16 +61,16 @@ func GetEventById(id int64) (*Event, error) {
 	}
 
 	for rows.Next() {
-		rows.Scan(&e.Id, &e.Title, &e.Description, &e.StartTime, &e.EndTime, &resourceId)
+		rows.Scan(&event.Id, &event.Title, &event.Description, &event.StartTime, &event.EndTime, &resourceId)
 	}
 
 	// populate resource
-	e.Resource, err = GetResourceById(resourceId)
+	event.Resource, err = GetResourceById(resourceId)
 	if err != nil {
 		return nil, err
 	}
 
-	return &e, nil
+	return &event, nil
 }
 
 // Exist Check if the event exist
@@ -82,4 +85,30 @@ func (e *Event) Exist() (bool, error) {
 	}
 
 	return true, nil
+}
+
+// GetEvents function that gets all events
+func GetEvents() (events []*Event, err error) {
+
+	rows, err := DbConn.Query(`SELECT * FROM Events`)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var event Event
+		var resourceId int64
+
+		rows.Scan(&event.Id, &event.Title, &event.Description, &event.StartTime, &event.EndTime, &resourceId)
+
+		// populate resource
+		event.Resource, err = GetResourceById(resourceId)
+		if err != nil {
+			return nil, err
+		}
+
+		events = append(events, &event)
+	}
+
+	return events, nil
 }
