@@ -31,7 +31,7 @@ func (e *Event) NewEvent() (int64, error) {
 		e.Resource.Id = resource
 	}
 
-	qp, err := DbConn.Prepare(`INSERT INTO Events(title, description, startTime, endTime, resource) VALUES (?, ?, ?, ?)`)
+	qp, err := DbConn.Prepare(`INSERT INTO Events(title, description, startTime, endTime, resource) VALUES (?, ?, ?, ?, ?)`)
 	if err != nil {
 		return -1, err
 	}
@@ -99,7 +99,7 @@ func GetEvents() (events []*Event, err error) {
 		var event Event
 		var resourceId int64
 
-		rows.Scan(&event.Id, &event.Title, &event.Description, &event.StartTime, &event.EndTime, &resourceId)
+		rows.Scan(&event.Id, &event.Title, &event.Description, &event.StartTime, &resourceId, &event.EndTime)
 
 		// populate resource
 		event.Resource, err = GetResourceById(resourceId)

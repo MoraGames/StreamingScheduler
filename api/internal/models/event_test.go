@@ -11,10 +11,11 @@ func TestEvent_NewEvent(t *testing.T) {
 	models.DbConn = initDB()
 
 	event := models.Event{
-		Title: "NANA EP 01 ITA",
-		Time:  time.Now().Add(time.Hour * 1),
+		Title:     "Citrus Ep 02 ITA",
+		StartTime: time.Now().Add(time.Hour * 25),
+		EndTime:   time.Now().Add(time.Hour * 27),
 		Resource: &models.Resource{
-			Url: "file:///home/kiritonya/Scaricati/NANA_01_ITA.mp4",
+			Url: "file:///home/kiritonya/Scaricati/Citrus_02_ITA.mp4",
 			Language: &models.Language{
 				Abbreviation: "ita",
 				Name:         "italian",
@@ -26,7 +27,7 @@ func TestEvent_NewEvent(t *testing.T) {
 			Episode: &models.Episode{
 				Series: &models.Series{
 					OriginalTitle: &models.Title{
-						Title: "NANA",
+						Title: "Citrus",
 						Language: &models.Language{
 							Abbreviation: "jpn",
 							Name:         "japanese",
@@ -40,7 +41,7 @@ func TestEvent_NewEvent(t *testing.T) {
 				},
 				Number: 1,
 				OriginalTitle: &models.Title{
-					Title: "Le due NANA si incontrano",
+					Title: "Le due sorelle si incontrano",
 					Language: &models.Language{
 						Abbreviation: "ita",
 						Name:         "italian",

@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"github.com/MoraGames/StreamingScheduler/core/internal/models"
 	"github.com/gorilla/handlers"
 	"net/http"
 	"os"
@@ -50,6 +51,8 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	models.DbConn = dbConn
 }
 
 func main() {
