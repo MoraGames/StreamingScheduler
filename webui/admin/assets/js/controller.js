@@ -1,4 +1,6 @@
-const endpoint = "http://api.streamtv.it/v1"
+const endpointApi = "http://api.streamtv.it/v1"
+const endpointAuth = "http://auth.streamtv.it/api/v1"
+
 
 loadEvents()
 
@@ -16,7 +18,7 @@ async function loadEvents() {
 async function getEvents() {
 
     // Get events
-    let response = await fetch(endpoint + "/events")
+    let response = await fetch(endpointApi + "/events")
     let events = await response.json()
 
     events.forEach((event, index) => {
@@ -352,3 +354,83 @@ function animationFallback() {
         this.modalHeaderBg.dispatchEvent(event);
     }
 };
+
+async function login() {
+
+    var email = document.getElementById("exampleInputEmail1").value
+    var password = document.getElementById("exampleInputPassword1").value
+
+    console.log(email, password)
+
+    const response = await fetch(endpointAuth + "/login", {
+        method: "POST",
+        body: JSON.stringify({
+            email: email,
+            password: password,
+        })
+    })
+
+    let resJson = await response.json()
+
+    console.log(resJson.AccessToken, resJson.Expiration)
+
+    localStorage.setItem("JWT_AC", resJson.AccessToken)
+    localStorage.setItem("JWT_EXP", resJson.Expiration)
+
+    location.replace("/index.html")
+}
+
+function checkSession() {
+
+    let token = localStorage.getItem("JWT_AT")
+
+    if (token) {
+        location.replace("/login.html")
+    }
+}
+
+async function refresh() {
+
+    const response = await fetch(endpointAuth + "/refresh")
+    let resJson = await response.json()
+
+    localStorage.setItem("JWT_AC", resJson.AccessToken)
+    localStorage.setItem("JWT_EXP", resJson.Expiration)
+}
+
+async function register() {
+    var email = document.getElementById("exampleInputEmail").value
+    var username = document.getElementById("exampleInputUsername").value
+    var password = document.getElementById("exampleInputPassword").value
+    var confirmPassword = document.getElementById("exampleInputConfirmPassword").value
+    var profilePicture = document.getElementById("exampleInputProfilePicture").value
+
+    if (password !== confirmPassword) {
+        alert("Le password non corrispondono")
+        return
+    }
+    
+     const response = await fetch(endpointAuth + "/register", {
+         method: "POST",
+         body: JSON.stringify({
+             email: email,
+             username: username,
+             password: password,
+             profilePicture: profilePicture,
+        })
+    })
+    
+    if (response.status === 400) {
+        alert("Invalid form")
+        return
+    }
+
+    if (response.status === 409) {
+        alert("User already exist")
+        return
+    }
+    
+    let resJson = await response.json()
+
+    location.replace("/confirmEmail.html")
+}

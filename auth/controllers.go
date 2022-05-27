@@ -125,7 +125,6 @@ func register(w http.ResponseWriter, r *http.Request) {
 		ProfilePicture string `json:"profilePicture,omitempty"`
 	}{}
 
-	ip := utils.GetIP(r)
 
 	// Try to decode the request body into the struct. If there is an error,
 	// respond to the client with the error message and a 400 status code.
@@ -157,14 +156,14 @@ func register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if exist {
-		utils.PrintErr(w, "A user with this email already exists")
+		http.Error(w, "A user with this email already exists", http.StatusConflict)
 		return
 	}
 
 	//Add in the database
 	lastId, err := u.NewUser()
 	if err != nil {
-		log.Error("General", ip, "ApiSignUp", "AddNewUser error: "+err.Error())
+		log.Error("AddNewUser error: " + err.Error())
 		utils.PrintInternalErr(w)
 		return
 	}
@@ -198,13 +197,12 @@ func register(w http.ResponseWriter, r *http.Request) {
 	c := Conferma{
 		Username: u.Username,
 		Link: fmt.Sprintf(
-			"https://%s:%s/api/v1/confirm?email=%s&id=%s",
+			"https://%s/api/v1/verify?email=%s&id=%s",
 			os.Getenv("HOSTNAME"),
-			os.Getenv("PORT"),
 			u.Email,
 			refToken.RefreshId,
 		),
-		Login: "https://" + os.Getenv("HOSTNAME") + ":" + os.Getenv("PORT") + "/api/v1/login",
+		Login: "https://" + os.Getenv("HOSTNAME") + "/api/v1/login",
 	}
 
 	//Send mails

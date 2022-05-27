@@ -1,0 +1,15 @@
+version: '3.4'
+services:
+  # API server
+  golang-prod:
+    build:
+      context: auth
+      dockerfile: Dockerfile
+    # image: registry-host:5000/pngr/golang-prod:${GITHUB_SHA}
+
+  # front-end built with react
+  react-prod:
+    build:
+      context: webui
+      target: prod
+    # image: registry-host:5000/pngr/react-prod:${GITHUB_SHA}
