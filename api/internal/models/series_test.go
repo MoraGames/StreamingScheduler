@@ -32,3 +32,15 @@ func TestSeries_NewSeries(t *testing.T) {
 
 	t.Log("Series:", seriesId)
 }
+
+func TestDeleteSeries(t *testing.T) {
+
+	models.DbConn = initDB()
+
+	err := models.DeleteSeries(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Log("DELETE [OK]")
+}

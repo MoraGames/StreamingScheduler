@@ -33,3 +33,15 @@ func TestGetLanguageById(t *testing.T) {
 
 	t.Log("Language:", lang)
 }
+
+func TestDeleteLanguage(t *testing.T) {
+
+	models.DbConn = initDB()
+
+	err := models.DeleteLanguage(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Log("DELETE [OK]")
+}

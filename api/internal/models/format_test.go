@@ -32,3 +32,15 @@ func TestGetFormatById(t *testing.T) {
 
 	t.Log("Format:", format)
 }
+
+func TestDeleteFormat(t *testing.T) {
+
+	models.DbConn = initDB()
+
+	err := models.DeleteFormat(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Log("DELETE [OK]")
+}

@@ -69,3 +69,15 @@ func TestGetResourceById(t *testing.T) {
 
 	t.Log("Resource:", resource)
 }
+
+func TestDeleteResources(t *testing.T) {
+
+	models.DbConn = initDB()
+
+	err := models.DeleteResource(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Log("DELETE [OK]")
+}

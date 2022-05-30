@@ -39,3 +39,15 @@ func TestGetTitleById(t *testing.T) {
 
 	t.Log("Title:", title)
 }
+
+func TestDeleteTitle(t *testing.T) {
+
+	models.DbConn = initDB()
+
+	err := models.DeleteTitle(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Log("DELETE [OK]")
+}

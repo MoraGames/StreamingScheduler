@@ -71,3 +71,15 @@ func TestGetEventById(t *testing.T) {
 
 	t.Log("Event:", event)
 }
+
+func TestDeleteEvent(t *testing.T) {
+
+	models.DbConn = initDB()
+
+	err := models.DeleteEvent(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Log("DELETE [OK]")
+}
