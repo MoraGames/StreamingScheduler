@@ -58,3 +58,19 @@ func (q *Quality) Exist() (bool, error) {
 
 	return true, nil
 }
+
+// DeleteQuality is a function that deletes the quality from the database by id
+func DeleteQuality(id int64) (error) {
+
+	qp, err := DbConn.Prepare(`DELETE FROM Qualities WHERE id = ?`)
+	if err != nil {
+		return err
+	}
+
+	_, err = qp.Query(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

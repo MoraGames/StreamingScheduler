@@ -90,3 +90,20 @@ func (s *Series) Exist() (bool, error) {
 
 	return true, nil
 }
+
+// DeleteSeries is a function that deletes the series from the database by id
+func DeleteSeries(id int64) (error) {
+
+	qp, err := DbConn.Prepare(`DELETE FROM Series WHERE id = ?`)
+	if err != nil {
+		return err
+	}
+
+	_, err = qp.Query(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+

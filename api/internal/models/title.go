@@ -77,3 +77,19 @@ func (t *Title) Exist() (bool, error) {
 
 	return true, nil
 }
+
+// DeleteTitle is a function that deletes the title from the database by id
+func DeleteTitle(id int64) (error) {
+
+	qp, err := DbConn.Prepare(`DELETE FROM Titles WHERE id = ?`)
+	if err != nil {
+		return err
+	}
+
+	_, err = qp.Query(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

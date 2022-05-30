@@ -56,3 +56,15 @@ func TestGetEpisodeById(t *testing.T) {
 
 	t.Log("Episode:", episode)
 }
+
+func TestDeleteEpisode(t *testing.T) {
+
+	models.DbConn = initDB()
+
+	err := models.DeleteEpisode(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Log("DELETE [OK]")
+}

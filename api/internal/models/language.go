@@ -57,3 +57,19 @@ func (l *Language) Exist() (bool, error) {
 
 	return true, nil
 }
+
+// DeleteLanguage is a function that deletes the languages from the database by id
+func DeleteLanguage(id int64) (error) {
+
+	qp, err := DbConn.Prepare(`DELETE FROM Languages WHERE id = ?`)
+	if err != nil {
+		return err
+	}
+
+	_, err = qp.Query(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

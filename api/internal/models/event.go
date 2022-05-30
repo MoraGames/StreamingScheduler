@@ -112,3 +112,19 @@ func GetEvents() (events []*Event, err error) {
 
 	return events, nil
 }
+
+// DeleteEvent is a function that deletes the event from the database by id
+func DeleteEvent(id int64) (error) {
+
+	qp, err := DbConn.Prepare(`DELETE FROM Events WHERE id = ?`)
+	if err != nil {
+		return err
+	}
+
+	_, err = qp.Query(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

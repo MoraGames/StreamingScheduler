@@ -162,3 +162,19 @@ func (r *Resource) Exist() (bool, error) {
 
 	return true, nil
 }
+
+// DeleteResource is a function that deletes the resource from the database by id
+func DeleteResource(id int64) (error) {
+
+	qp, err := DbConn.Prepare(`DELETE FROM Resources WHERE id = ?`)
+	if err != nil {
+		return err
+	}
+
+	_, err = qp.Query(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

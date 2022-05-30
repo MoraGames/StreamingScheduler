@@ -56,3 +56,19 @@ func (f *Format) Exist() (bool, error) {
 
 	return true, nil
 }
+
+// DeleteFormat is a function that deletes the format from the database by id
+func DeleteFormat(id int64) (error) {
+
+	qp, err := DbConn.Prepare(`DELETE FROM Formats WHERE id = ?`)
+	if err != nil {
+		return err
+	}
+
+	_, err = qp.Query(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

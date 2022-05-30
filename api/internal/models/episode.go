@@ -102,3 +102,19 @@ func (ep *Episode) Exist() (bool, error) {
 
 	return true, nil
 }
+
+// DeleteEpisode is a function that deletes the episode from the database by id
+func DeleteEpisode(id int64) (error) {
+
+	qp, err := DbConn.Prepare(`DELETE FROM Episodes WHERE id = ?`)
+	if err != nil {
+		return err
+	}
+
+	_, err = qp.Query(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
