@@ -1,5 +1,5 @@
-const endpointApi = "http://api.streamtv.it/v1"
-const endpointAuth = "http://auth.streamtv.it/api/v1"
+const endpointApi = "http://localhost:5001/v1"
+const endpointAuth = "http://localhost:5000/api/v1"
 
 
 loadEvents()
@@ -111,6 +111,8 @@ function placeElement(node, day) {
 
     node.setAttribute('style', 'top: '+(eventTop-1)+'px; height: '+(eventHeight +1)+'px');
     initEvents(node)
+
+    console.log("DAY: " + day)
 
     document.getElementById(day).appendChild(node)
 }
@@ -383,8 +385,13 @@ async function login() {
 function checkSession() {
 
     let token = localStorage.getItem("JWT_AT")
+    let exp = localStorage.getItem("JWT_EXP")
 
     if (token) {
+        location.replace("/login.html")
+    }
+
+    if (exp <= (new Date())){
         location.replace("/login.html")
     }
 }

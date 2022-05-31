@@ -11,9 +11,9 @@ func TestEvent_NewEvent(t *testing.T) {
 	models.DbConn = initDB()
 
 	event := models.Event{
-		Title:     "Citrus Ep 02 ITA",
-		StartTime: time.Now().Add(time.Hour * 25),
-		EndTime:   time.Now().Add(time.Hour * 27),
+		Title:     "Citrus Ep 03 ITA",
+		StartTime: time.Now(),
+		EndTime:   time.Now().Add(time.Hour * 1),
 		Resource: &models.Resource{
 			Url: "file:///home/kiritonya/Scaricati/Citrus_02_ITA.mp4",
 			Language: &models.Language{

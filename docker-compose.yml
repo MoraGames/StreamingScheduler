@@ -6,73 +6,12 @@ networks:
 
 services:
 
-  traefik:
-    image: traefik:2.4
-    container_name: traefik
-    volumes:
-      #- .config/traefik:/etc/traefik
-      - /var/run/docker.sock:/var/run/docker.sock
-      - .logs/traefik/logs:/logs
-    networks:
-      - newNet
-    labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.api.rule=Host(`traefik.streamtv.it`)'
-      - 'traefik.http.routers.api.entrypoints=http'
-      - 'traefik.http.routers.api.service=api@internal'
-
-    ports:
-      # HTTP port
-      - 80:80
-
-    command:
-      - '--api'
-      - '--providers.docker=true'
-      - '--providers.docker.exposedByDefault=false'
-      - '--entrypoints.http=true'
-      - '--entrypoints.http.address=:80'
-      - '--log=true'
-      - '--log.level=DEBUG'
-      - '--api.insecure=true'
-
-  #webui:
-  #  build:
-  #    context: ./webui
-  #    dockerfile: Dockerfile
-  #  ports:
-  #  - "3001:3001"
-  #  labels:
-  #    - traefik.enable=true
-      #    - traefik.backend=webui
-      #    - traefik.docker.network=net
-      #    - traefik.http.routers.webui.entryPoints=http
-    #    - traefik.http.routers.webui.rule=Host(`webui.${DOMAIN}`)
-      #  env_file:
-    #    webui/.env
-      #  networks:
-  #    - newNet
-
   auth:
     build:
       context: ./auth
       dockerfile: Dockerfile
     ports:
       - "5000:5000"
-    labels:
-      - traefik.enable=true
-      - traefik.backend=auth
-      - traefik.docker.network=net
-      - traefik.http.routers.whoami.entryPoints=http
-      - traefik.http.routers.whoami.rule=host(`auth.${DOMAIN}`)
-      - traefik.http.routers.whoami.tls=false
-
-      # CORS configuration
-      - "traefik.http.middlewares.testheader.headers.accesscontrolallowmethods=*"
-      - "traefik.http.middlewares.testheader.headers.accesscontrolalloworigin=*"
-      - "traefik.http.middlewares.testheader.headers.accessControlAllowCredentials=true"
-      - "traefik.http.middlewares.testheader.headers.accesscontrolmaxage=100"
-      - "traefik.http.middlewares.testheader.headers.addvaryheader=true"
-      - traefik.http.routers.service.middlewares=serviceheaders
     env_file:
       auth/.env
     networks:
@@ -84,21 +23,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5001:5001"
-    labels:
-      - traefik.enable=true
-      - traefik.backend=api
-      - traefik.docker.network=net
-      - traefik.http.routers.apiRoute.entryPoints=http
-      - traefik.http.routers.apiRoute.rule=host(`api.${DOMAIN}`)
-      - traefik.http.routers.apiRoute.tls=false
-
-      # CORS configuration
-      - "traefik.http.middlewares.testheader.headers.accesscontrolallowmethods=*"
-      - "traefik.http.middlewares.testheader.headers.accesscontrolalloworigin=*"
-      - "traefik.http.middlewares.testheader.headers.accessControlAllowCredentials=true"
-      - "traefik.http.middlewares.testheader.headers.accesscontrolmaxage=100"
-      - "traefik.http.middlewares.testheader.headers.addvaryheader=true"
-      - traefik.http.routers.service.middlewares=serviceheaders
     env_file:
       api/.env
     networks:
@@ -129,13 +53,6 @@ services:
       #- REMOTE_SQL=http://URL1/your.sql,https://URL2/your.sql #optional
     volumes:
       - ./.sql:/config
-    labels:
-      - traefik.enable=true
-      - traefik.backend=rtmp
-      - traefik.docker.network=net
-      - traefik.http.routers.rtmp.entryPoints=http
-      - traefik.http.routers.rtmp.rule=host(`rtmp.${DOMAIN}`)
-      - traefik.http.routers.rtmp.tls=false
     ports:
       - 3306:3306
     restart: unless-stopped

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/MoraGames/StreamingScheduler/auth/internal/jwt"
 	"github.com/MoraGames/StreamingScheduler/auth/internal/mail"
+	"github.com/MoraGames/StreamingScheduler/auth/internal/password"
 	"github.com/MoraGames/StreamingScheduler/auth/internal/utils"
 	"net/http"
 	"os"
@@ -31,12 +32,16 @@ func login(w http.ResponseWriter, r *http.Request) {
 	// Get user info
 	user, err := GetUserByEmail(params.Email)
 	if err != nil {
+		log.Infoln(err)
 		utils.PrintErr(w, "Incorrect username or password")
 		return
 	}
 
+	// encoded password
+	encoded := password.NewSHA3_512Password([]byte(params.Password)).ToString()
+
 	// verify password and email
-	if (user.Password != params.Password) || (user.Email != params.Email) {
+	if (user.Password != encoded) || (user.Email != params.Email) {
 		utils.PrintErr(w, "Incorrect username or password")
 		return
 	}
@@ -124,7 +129,6 @@ func register(w http.ResponseWriter, r *http.Request) {
 		Password       string `json:"password"`
 		ProfilePicture string `json:"profilePicture,omitempty"`
 	}{}
-
 
 	// Try to decode the request body into the struct. If there is an error,
 	// respond to the client with the error message and a 400 status code.
