@@ -89,3 +89,23 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(data)
 }
+
+func DeleteEvent(w http.ResponseWriter, r *http.Request) {
+
+	// Get path params
+	params := mux.Vars(r)
+
+	// Convert id to int64
+	id, err := strconv.ParseInt(params["id"], 10, 64)
+	if err != nil {
+		PrintErr(w, "invalid id")
+		return
+	}
+
+	err = models.DeleteEvent(id)
+	if err != nil {
+		PrintErr(w, err.Error())
+	}
+
+	w.Write([]byte(`{"status": "success"`))
+}

@@ -37,7 +37,7 @@ func TestDeleteFormat(t *testing.T) {
 
 	models.DbConn = initDB()
 
-	err := models.DeleteFormat(1)
+	err := models.DeleteFormat(4)
 	if err != nil {
 		t.Fatal(err)
 	}

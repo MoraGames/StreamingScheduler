@@ -69,3 +69,23 @@ func GetSeries(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(data)
 }
+
+func DeleteSeries(w http.ResponseWriter, r *http.Request) {
+
+	// Get path params
+	params := mux.Vars(r)
+
+	// Convert id to int64
+	id, err := strconv.ParseInt(params["id"], 10, 64)
+	if err != nil {
+		PrintErr(w, "invalid id")
+		return
+	}
+
+	err = models.DeleteSeries(id)
+	if err != nil {
+		PrintErr(w, err.Error())
+	}
+
+	w.Write([]byte(`{"status": "success"`))
+}
